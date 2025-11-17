@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Full Debug</title>
+    <style>
+        body { 
+            background: #000; 
+            color: #0f0; 
+            font-family: Arial; 
+            padding: 20px;
+            margin: 0;
+        }
+        .section { 
+            background: #111; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 3px solid #0f0;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Telegram Web App Debug</h1>
+    
+    <div class="section">
+        <h3>🌐 Environment</h3>
+        <p id="env-url">URL: <span id="url-value"></span></p>
+        <p id="env-https">HTTPS: <span id="https-value"></span></p>
+        <p id="env-mobile">Mobile: <span id="mobile-value"></span></p>
+    </div>
+
+    <div class="section">
+        <h3>📱 Telegram API</h3>
+        <p id="tg-available">Telegram WebApp: <span id="tg-status"></span></p>
+        <p id="tg-platform">Platform: <span id="platform-value"></span></p>
+        <p id="tg-version">Version: <span id="version-value"></span></p>
+    </div>
+
+    <div class="section">
+        <h3>🚨 Error Simulation</h3>
+        <button onclick="testCors()">Test CORS</button>
+        <button onclick="testIframe()">Test Iframe</button>
+        <button onclick="testScript()">Test Script Loading</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Basic environment info
+        document.getElementById('url-value').textContent = window.location.href;
+        document.getElementById('https-value').textContent = window.location.protocol === 'https:' ? '✅ Yes' : '❌ No';
+        document.getElementById('mobile-value').textContent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? '✅ Yes' : '❌ No';
+
+        // Telegram WebApp API check
+        if (window.Telegram && Telegram.WebApp) {
+            document.getElementById('tg-status').textContent = '✅ Available';
+            document.getElementById('platform-value').textContent = Telegram.WebApp.platform;
+            document.getElementById('version-value').textContent = Telegram.WebApp.version;
+            
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        } else {
+            document.getElementById('tg-status').textContent = '❌ Not Available';
+            document.getElementById('platform-value').textContent = 'N/A';
+            document.getElementById('version-value').textContent = 'N/A';
+        }
+
+        // Test functions
+        function testCors() {
+            fetch(window.location.href)
+                .then(response => {
+                    document.getElementById('test-results').innerHTML = '<p class="success">✅ CORS: Fetch successful</p>';
+                })
+                .catch(error => {
+                    document.getElementById('test-results').innerHTML = '<p class="error">❌ CORS: ' + error + '</p>';
+                });
+        }
+
+        function testIframe() {
+            const iframe = document.createElement('iframe');
+            iframe.src = window.location.href;
+            iframe.style.width = '100%';
+            iframe.style.height = '200px';
+            iframe.onload = () => document.getElementById('test-results').innerHTML = '<p class="success">✅ Iframe: Loaded successfully</p>';
+            iframe.onerror = () => document.getElementById('test-results').innerHTML = '<p class="error">❌ Iframe: Failed to load</p>';
+            document.getElementById('test-results').appendChild(iframe);
+        }
+
+        function testScript() {
+            const script = document.createElement('script');
+            script.src = 'main.js?' + Date.now();
+            script.onload = () => document.getElementById('test-results').innerHTML = '<p class="success">✅ Script: Loaded successfully</p>';
+            script.onerror = () => document.getElementById('test-results').innerHTML = '<p class="error">❌ Script: Failed to load</p>';
+            document.head.appendChild(script);
+        }
+
+        // Log everything to console
+        console.log('=== TELEGRAM DEBUG INFO ===');
+        console.log('URL:', window.location.href);
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Telegram WebApp:', window.Telegram ? 'Available' : 'Not Available');
+        console.log('Platform:', Telegram?.WebApp?.platform);
+        console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
+    </script>
+</body>
+</html>
